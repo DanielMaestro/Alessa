@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>.\Alessa.ALex.SqlKata.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\TemporalProjects\SqlKata.Execution\SqlKata.Execution.csproj" />
+    <ProjectReference Include="..\Alessa.ALex\Alessa.ALex.csproj" />
+  </ItemGroup>
+
+</Project>

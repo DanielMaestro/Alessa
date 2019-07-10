@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>Alessa.QueryBuilder.Entities</AssemblyName>
+    <RootNamespace>Alessa.QueryBuilder.Entities</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>.\Alessa.QueryBuilder.Entities.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Alessa.Core.Entities\Alessa.Core.Entities.csproj" />
+  </ItemGroup>
+
+</Project>
