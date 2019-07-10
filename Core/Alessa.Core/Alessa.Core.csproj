@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>.\Alessa.Core.xml</DocumentationFile>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Alessa.Core.Entities\Alessa.Core.Entities.csproj" />
+  </ItemGroup>
+
+</Project>
