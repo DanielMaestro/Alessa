@@ -251,10 +251,17 @@ namespace Alessa.QueryBuilder
 
             var messages = new System.Collections.Concurrent.ConcurrentBag<GeneralMessage>();
 
+            const int requiredCode = 1;
+            
+
             Parallel.For(0, cross.Count, (i) =>
             {
-                if (cross[i].FieldDefinition.IsRequired && cross[i].Item.Value == null)
+                if (cross[i].FieldDefinition.IsRequired && (cross[i].Item.Value == null || string.IsNullOrWhiteSpace(cross[i].Item.Value.ToString())))
                 {
+                    messages.Add(new GeneralMessage()
+                    {
+                        //Code = 
+                    });
                 }
             });
 
