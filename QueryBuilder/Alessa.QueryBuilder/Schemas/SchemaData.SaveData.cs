@@ -8,6 +8,7 @@ using Alessa.QueryBuilder.Entities.Results;
 using Microsoft.EntityFrameworkCore;
 using SqlKata.Execution;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -289,6 +290,8 @@ namespace Alessa.QueryBuilder
             return result;
         }
 
+        #region Validations
+
         private List<GeneralMessage> GetBasicValidations(SaveParameters parameters, IEnumerable<FieldDefinition> fieldDefinitions)
         {
             List<Tuple<KeyValuePair<string, object>, FieldDefinitionUi, FieldDefinition>> cross;
@@ -311,9 +314,9 @@ namespace Alessa.QueryBuilder
                          select Tuple.Create(item, name.FieldDefinitionUi, name)).ToList();
             }
 
-            var messages = new System.Collections.Concurrent.ConcurrentBag<GeneralMessage>();
+            var messages = new ConcurrentBag<GeneralMessage>();
 
-            // Tohose are constant codes used for the messaging.
+            // Those are constant codes used for the messaging.
             const int requiredCode = 1;
             const int regexCode = 2;
             const int maxCode = 3;
@@ -322,9 +325,9 @@ namespace Alessa.QueryBuilder
 
             const string defaultRequiredErrorMsg = "The field {{DisplayName}} is required.";
             const string defaultRegexErrorMsg = "The field {{DisplayName}} must match the regular expression '{{Regex}}'.";
-            const string defaultMinCodeErrorMsg = "The length of {{DisplayName}} must be {{MinLength}} characters or more.";
-            const string defaultMaxErrorMsg = "The length of {{DisplayName}} must be {{MaxLength}} cahracters or fewer.";
-            const string defaultBetweenErrorMsg = "The length of {{DisplayName}} must be between {{MinLength}} and {{MaxLength}} characters.";
+            const string defaultMinCodeErrorMsg = "The length of {{DisplayName}} must be {{MinLength}} or more.";
+            const string defaultMaxErrorMsg = "The length of {{DisplayName}} must be {{MaxLength}} or fewer.";
+            const string defaultBetweenErrorMsg = "The length of {{DisplayName}} must be between {{MinLength}} and {{MaxLength}}.";
 
             // Validations parallel processing.
             Parallel.For(0, cross.Count, (i) =>
@@ -409,6 +412,350 @@ namespace Alessa.QueryBuilder
 
             return messages.ToList();
         }
+
+        private void ValidateCollectionyValues(string itemName, IDictionary<string, object> dictionary, IEnumerable<object> values, FieldDefinitionUi fieldDefinition, ref ConcurrentBag<GeneralMessage> messages)
+        {
+            const int maxCode = 3;
+            const int minCode = 4;
+            const int betweenCode = 5;
+
+            const string defaultMinCodeErrorMsg = "The selected item for {{DisplayName}} must be {{MinLength}} or more.";
+            const string defaultMaxErrorMsg = "The selected item for {{DisplayName}} must be {{MaxLength}} or fewer.";
+            const string defaultBetweenErrorMsg = "The selected item for {{DisplayName}} must be between {{MinLength}} and {{MaxLength}}.";
+
+            var length = values.Count();
+
+            // When the MinLength and MaxLength are set for this field.
+            if (fieldDefinition.MinLength != null && fieldDefinition.MinLength > 0 && fieldDefinition.MaxLength != null && fieldDefinition.MinLength > 0)
+            {
+                if (length < fieldDefinition.MinLength.Value || length > fieldDefinition.MaxLength.Value)
+                {
+                    messages.Add(new GeneralMessage()
+                    {
+                        Code = betweenCode,
+                        MessageType = EMessageType.Error,
+                        Message = defaultBetweenErrorMsg.FormatQuery(dictionary),
+                        Source = itemName,
+                    });
+                }
+            }
+            // Only MinLength is set.
+            else if ((fieldDefinition.MinLength != null && fieldDefinition.MinLength > 0) && (fieldDefinition.MaxLength == null || fieldDefinition.MinLength <= 0))
+            {
+                if (length < fieldDefinition.MinLength.Value)
+                {
+                    messages.Add(new GeneralMessage()
+                    {
+                        Code = minCode,
+                        MessageType = EMessageType.Error,
+                        Message = fieldDefinition.MinLengthErrorMsg ?? defaultMinCodeErrorMsg.FormatQuery(dictionary),
+                        Source = itemName,
+                    });
+                }
+            }
+            // Only MaxLength is set.
+            else if ((fieldDefinition.MinLength == null || fieldDefinition.MinLength <= 0) && (fieldDefinition.MaxLength != null && fieldDefinition.MinLength > 0))
+            {
+                if (length > fieldDefinition.MaxLength.Value)
+                {
+                    messages.Add(new GeneralMessage()
+                    {
+                        Code = maxCode,
+                        MessageType = EMessageType.Error,
+                        Message = fieldDefinition.MaxLengthErrorMsg ?? defaultMaxErrorMsg.FormatQuery(dictionary),
+                        Source = itemName,
+                    });
+                }
+            }
+        }
+
+        private void ValidateStringValues(string itemName, IDictionary<string, object> dictionary, string value, FieldDefinitionUi fieldDefinition, ref ConcurrentBag<GeneralMessage> messages)
+        {
+            // Those are constant codes used for the messaging.
+            const int requiredCode = 1;
+            const int regexCode = 2;
+            const int maxCode = 3;
+            const int minCode = 4;
+            const int betweenCode = 5;
+
+            const string defaultRequiredErrorMsg = "The field {{DisplayName}} is required.";
+            const string defaultRegexErrorMsg = "The field {{DisplayName}} must match the regular expression '{{Regex}}'.";
+            const string defaultMinCodeErrorMsg = "The length of {{DisplayName}} must be {{MinLength}} or more.";
+            const string defaultMaxErrorMsg = "The length of {{DisplayName}} must be {{MaxLength}} or fewer.";
+            const string defaultBetweenErrorMsg = "The length of {{DisplayName}} must be between {{MinLength}} and {{MaxLength}}.";
+
+            bool isNullValue = value == null;
+
+            // Is required?
+            if (fieldDefinition.IsRequired && (isNullValue || string.IsNullOrWhiteSpace(value)))
+            {
+                isNullValue = true;
+                messages.Add(new GeneralMessage()
+                {
+                    Code = requiredCode,
+                    MessageType = EMessageType.Error,
+                    Message = fieldDefinition.RequiredErrorMsg ?? defaultRequiredErrorMsg.FormatQuery(dictionary),
+                    Source = itemName,
+                });
+            }
+
+            // Regular expression.
+            if (!isNullValue)
+            {
+                var strValue = value;
+
+                if (!string.IsNullOrWhiteSpace(fieldDefinition.Regex) && !Regex.IsMatch(strValue, fieldDefinition.Regex))
+                {
+                    messages.Add(new GeneralMessage()
+                    {
+                        Code = regexCode,
+                        MessageType = EMessageType.Error,
+                        Message = fieldDefinition.RegexErrorMsg ?? defaultRegexErrorMsg.FormatQuery(dictionary),
+                        Source = itemName,
+                    });
+                }
+
+                // When the MinLength and MaxLength are set for this field.
+                if (fieldDefinition.MinLength != null && fieldDefinition.MinLength > 0 && fieldDefinition.MaxLength != null && fieldDefinition.MinLength > 0)
+                {
+                    if (strValue.Length < fieldDefinition.MinLength.Value || strValue.Length > fieldDefinition.MaxLength.Value)
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = betweenCode,
+                            MessageType = EMessageType.Error,
+                            Message = defaultBetweenErrorMsg.FormatQuery(dictionary),
+                            Source = itemName,
+                        });
+                    }
+                }
+                // Only MinLength is set.
+                else if ((fieldDefinition.MinLength != null && fieldDefinition.MinLength > 0) && (fieldDefinition.MaxLength == null || fieldDefinition.MinLength <= 0))
+                {
+                    if (strValue.Length < fieldDefinition.MinLength.Value)
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = minCode,
+                            MessageType = EMessageType.Error,
+                            Message = fieldDefinition.MinLengthErrorMsg ?? defaultMinCodeErrorMsg.FormatQuery(dictionary),
+                            Source = itemName,
+                        });
+                    }
+                }
+                // Only MaxLength is set.
+                else if ((fieldDefinition.MinLength == null || fieldDefinition.MinLength <= 0) && (fieldDefinition.MaxLength != null && fieldDefinition.MinLength > 0))
+                {
+                    if (strValue.Length > fieldDefinition.MaxLength.Value)
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = maxCode,
+                            MessageType = EMessageType.Error,
+                            Message = fieldDefinition.MaxLengthErrorMsg ?? defaultMaxErrorMsg.FormatQuery(dictionary),
+                            Source = itemName,
+                        });
+                    }
+                }
+            }
+        }
+
+        private static class Validations
+        {
+            #region Fields and constants
+            // Those are constant codes used for the messaging.
+            private const int requiredCode = 1;
+            private const int regexCode = 2;
+            private const int maxCode = 3;
+            private const int minCode = 4;
+            private const int betweenCode = 5;
+
+            private const string defaultRequiredErrorMsg = "The field {{DisplayName}} is required.";
+            private const string defaultRegexErrorMsg = "The field {{DisplayName}} must match the regular expression '{{Regex}}'.";
+            private const string defaultMinCodeErrorMsg = "The length of {{DisplayName}} must be {{MinLength}} or more.";
+            private const string defaultMaxErrorMsg = "The length of {{DisplayName}} must be {{MaxLength}} or fewer.";
+            private const string defaultBetweenErrorMsg = "The length of {{DisplayName}} must be between {{MinLength}} and {{MaxLength}}.";
+
+            private const string defaultCollectionMinCodeErrorMsg = "The selected item for {{DisplayName}} must be {{MinLength}} or more.";
+            private const string defaultCollectionMaxErrorMsg = "The selected item for {{DisplayName}} must be {{MaxLength}} or fewer.";
+            private const string defaultCollectionBetweenErrorMsg = "The selected item for {{DisplayName}} must be between {{MinLength}} and {{MaxLength}}.";
+            #endregion
+
+            internal static List<GeneralMessage> GetBasicValidations(SaveParameters parameters, IEnumerable<FieldDefinition> fieldDefinitions)
+            {
+                List<Tuple<KeyValuePair<string, object>, FieldDefinitionUi, FieldDefinition>> cross;
+
+                // When the save type is Create it means the action to execute is an insert, it means all the field definitions
+                // must be validated, e.g. When you have to enroll an User you need the First and Last name, thenin case you provide
+                // only the First Name then it will throw a message indicating the Last name is required.
+                if (parameters.SaveType == ESaveType.Create)
+                {
+                    cross = (from name in fieldDefinitions
+                             join item in parameters.AdditionalParameters on name.ItemName equals item.Key into jr
+                             from item in jr.DefaultIfEmpty()
+                             select Tuple.Create(item, name.FieldDefinitionUi, name)).ToList();
+                }
+                else
+                {
+                    // Otherwise if the record already exist and only you send the First name, then it will only validate the first name.
+                    cross = (from name in fieldDefinitions
+                             join item in parameters.AdditionalParameters on name.ItemName equals item.Key
+                             select Tuple.Create(item, name.FieldDefinitionUi, name)).ToList();
+                }
+
+                var messages = new ConcurrentBag<GeneralMessage>();
+
+                // Validations parallel processing.
+                Parallel.For(0, cross.Count, (i) =>
+                {
+                    // Gets the dicitonary from the object properties.
+                    var dictionary = cross[i].Item2.GetDictionary();
+                    var isNull = cross[i].Item1.Value == null;
+
+                    if (!isNull)
+                    {
+                        
+                        if (Alessa.Core.Helpers.EntityHelper.PrimitiveTypes.Contains(cross[i].Item1.Value.GetType()))
+                        {
+                        }
+                    }
+                });
+
+                return messages.ToList();
+            }
+
+            #region Basic validations
+            private static void ValidateCollectionyValues(string itemName, IDictionary<string, object> dictionary, IEnumerable<object> values, FieldDefinitionUi fieldDefinition, ref ConcurrentBag<GeneralMessage> messages)
+            {
+                var length = values.Count();
+
+                // When the MinLength and MaxLength are set for this field.
+                if (fieldDefinition.MinLength != null && fieldDefinition.MinLength > 0 && fieldDefinition.MaxLength != null && fieldDefinition.MinLength > 0)
+                {
+                    if (length < fieldDefinition.MinLength.Value || length > fieldDefinition.MaxLength.Value)
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = betweenCode,
+                            MessageType = EMessageType.Error,
+                            Message = defaultCollectionBetweenErrorMsg.FormatQuery(dictionary),
+                            Source = itemName,
+                        });
+                    }
+                }
+
+                // Only MinLength is set.
+                else if ((fieldDefinition.MinLength != null && fieldDefinition.MinLength > 0) && (fieldDefinition.MaxLength == null || fieldDefinition.MinLength <= 0))
+                {
+                    if (length < fieldDefinition.MinLength.Value)
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = minCode,
+                            MessageType = EMessageType.Error,
+                            Message = fieldDefinition.MinLengthErrorMsg ?? defaultCollectionMinCodeErrorMsg.FormatQuery(dictionary),
+                            Source = itemName,
+                        });
+                    }
+                }
+
+                // Only MaxLength is set.
+                else if ((fieldDefinition.MinLength == null || fieldDefinition.MinLength <= 0) && (fieldDefinition.MaxLength != null && fieldDefinition.MinLength > 0))
+                {
+                    if (length > fieldDefinition.MaxLength.Value)
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = maxCode,
+                            MessageType = EMessageType.Error,
+                            Message = fieldDefinition.MaxLengthErrorMsg ?? defaultCollectionMaxErrorMsg.FormatQuery(dictionary),
+                            Source = itemName,
+                        });
+                    }
+                }
+            }
+
+            private static void ValidateStringValues(string itemName, IDictionary<string, object> dictionary, string value, FieldDefinitionUi fieldDefinition, ref ConcurrentBag<GeneralMessage> messages)
+            {
+                bool isNullValue = value == null;
+
+                // Is required?
+                if (fieldDefinition.IsRequired && (isNullValue || string.IsNullOrWhiteSpace(value)))
+                {
+                    isNullValue = true;
+                    messages.Add(new GeneralMessage()
+                    {
+                        Code = requiredCode,
+                        MessageType = EMessageType.Error,
+                        Message = fieldDefinition.RequiredErrorMsg ?? defaultRequiredErrorMsg.FormatQuery(dictionary),
+                        Source = itemName,
+                    });
+                }
+
+                // Regular expression.
+                if (!isNullValue)
+                {
+                    var strValue = value;
+
+                    if (!string.IsNullOrWhiteSpace(fieldDefinition.Regex) && !Regex.IsMatch(strValue, fieldDefinition.Regex))
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = regexCode,
+                            MessageType = EMessageType.Error,
+                            Message = fieldDefinition.RegexErrorMsg ?? defaultRegexErrorMsg.FormatQuery(dictionary),
+                            Source = itemName,
+                        });
+                    }
+
+                    // When the MinLength and MaxLength are set for this field.
+                    if (fieldDefinition.MinLength != null && fieldDefinition.MinLength > 0 && fieldDefinition.MaxLength != null && fieldDefinition.MinLength > 0)
+                    {
+                        if (strValue.Length < fieldDefinition.MinLength.Value || strValue.Length > fieldDefinition.MaxLength.Value)
+                        {
+                            messages.Add(new GeneralMessage()
+                            {
+                                Code = betweenCode,
+                                MessageType = EMessageType.Error,
+                                Message = defaultBetweenErrorMsg.FormatQuery(dictionary),
+                                Source = itemName,
+                            });
+                        }
+                    }
+                    // Only MinLength is set.
+                    else if ((fieldDefinition.MinLength != null && fieldDefinition.MinLength > 0) && (fieldDefinition.MaxLength == null || fieldDefinition.MinLength <= 0))
+                    {
+                        if (strValue.Length < fieldDefinition.MinLength.Value)
+                        {
+                            messages.Add(new GeneralMessage()
+                            {
+                                Code = minCode,
+                                MessageType = EMessageType.Error,
+                                Message = fieldDefinition.MinLengthErrorMsg ?? defaultMinCodeErrorMsg.FormatQuery(dictionary),
+                                Source = itemName,
+                            });
+                        }
+                    }
+                    // Only MaxLength is set.
+                    else if ((fieldDefinition.MinLength == null || fieldDefinition.MinLength <= 0) && (fieldDefinition.MaxLength != null && fieldDefinition.MinLength > 0))
+                    {
+                        if (strValue.Length > fieldDefinition.MaxLength.Value)
+                        {
+                            messages.Add(new GeneralMessage()
+                            {
+                                Code = maxCode,
+                                MessageType = EMessageType.Error,
+                                Message = fieldDefinition.MaxLengthErrorMsg ?? defaultMaxErrorMsg.FormatQuery(dictionary),
+                                Source = itemName,
+                            });
+                        }
+                    }
+                }
+            }
+
+            #endregion
+        }
+        #endregion
 
         private IQueryable<ExecutionSource> GetTableExecutionSources(SaveParameters parameters, ETableDbEventType tableDbEventType)
         {
