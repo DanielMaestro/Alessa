@@ -97,14 +97,13 @@ namespace Alessa.QueryBuilder
         /// Gets a <see cref="DataResult"/> objec from the expection.
         /// </summary>
         /// <param name="ex">The exception.</param>
-        /// <param name="methodCode">The method code where the exception was thrwon.</param>
+        /// <param name="methodCode">The method code where the exception was thrown.</param>
         /// <returns></returns>
         protected T GetResultFromException<T>(ALexException ex, int methodCode)
             where T : GeneralResult, new()
         {
-            var result = new T()
-            {
-            };
+            var result = new T();
+
             result.Messages.Add(new GeneralMessage()
             {
                 Code = ex.HResult,

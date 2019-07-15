@@ -83,7 +83,23 @@
         /// <summary>
         /// After a record is edited or created.
         /// </summary>
-        AfterCreateOrUpdate
+        AfterCreateOrUpdate,
+        /// <summary>
+        /// Triggers when the user wants to create a record.
+        /// </summary>
+        OnEnterCreate,
+        /// <summary>
+        /// Triggers when the user wants to update a record.
+        /// </summary>
+        OnEnterUpdate,
+        /// <summary>
+        /// Triggers when the user wants to create or updates a record.
+        /// </summary>
+        OnEnterCreateOrUpdate,
+        /// <summary>
+        /// Triggers when the user wants to delete an item.
+        /// </summary>
+        OnEnterDelete,
     }
 
     /// <summary>

@@ -20,20 +20,7 @@ namespace Alessa.ALex
         /// <returns>A string with the formatted query.</returns>
         public static string FormatQuery(this string queryTemplate, object data)
         {
-            IDictionary<string, object> properties = null;
-
-            // Converts the data properties in a dictionary.
-            if (data != null)
-            {
-                if (data is IDictionary<string, object>)
-                {
-                    properties = new Dictionary<string, object>((data as IDictionary<string, object>).ToDictionary(e => openBracets + e.Key + closeBracets, e => e.Value));
-                }
-                else
-                {
-                    properties = data.GetType().GetProperties().ToDictionary(e => openBracets + e.Name + closeBracets, e => e.GetValue(data));
-                }
-            }
+            IDictionary<string, object> properties = GetDictionary(data);
 
             var result = FormatQuery(queryTemplate, properties, true);
 
@@ -54,6 +41,31 @@ namespace Alessa.ALex
             return result;
         }
 
+        /// <summary>
+        /// Gets a <see cref="IDictionary{TKey, TValue}"/> from the specified object. It is useful whn calling the <see cref="FormatQuery(string, object)"/> method multiple times in one method.
+        /// </summary>
+        /// <typeparam name="T">The object type where the properties are get.</typeparam>
+        /// <param name="obj">The object.</param>
+        /// <returns></returns>
+        public static IDictionary<string, object> GetDictionary<T>(this T obj)
+            where T : class, new()
+        {
+            IDictionary<string, object> properties = null;
+            // Converts the data properties in a dictionary.
+            if (obj != null)
+            {
+                if (obj is IDictionary<string, object>)
+                {
+                    properties = new Dictionary<string, object>((obj as IDictionary<string, object>).ToDictionary(e => openBracets + e.Key + closeBracets, e => e.Value));
+                }
+                else
+                {
+                    properties = obj.GetType().GetProperties().ToDictionary(e => openBracets + e.Name + closeBracets, e => e.GetValue(obj));
+                }
+            }
+
+            return properties;
+        }
 
         private static string FormatQuery(string queryTemplate, IDictionary<string, object> properties, bool hasBracets)
         {
