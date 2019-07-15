@@ -15,7 +15,7 @@ namespace TesterBase.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -187,10 +187,26 @@ namespace TesterBase.Migrations
 
                     b.Property<int?>("MaxLength");
 
+                    b.Property<string>("MaxLengthErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
                     b.Property<int?>("MinLength");
+
+                    b.Property<string>("MinLengthErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
 
                     b.Property<string>("Regex")
                         .HasMaxLength(512)
+                        .IsUnicode(false);
+
+                    b.Property<string>("RegexErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
+                    b.Property<string>("RequiredErrorMsg")
+                        .HasMaxLength(255)
                         .IsUnicode(false);
 
                     b.Property<bool>("ShowInDetails");
