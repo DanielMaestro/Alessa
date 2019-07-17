@@ -10,7 +10,7 @@ using TesterBase.DataContext;
 namespace TesterBase.Migrations
 {
     [DbContext(typeof(SqlQueryBuilderTestDataContext))]
-    [Migration("20190715152039_Initial")]
+    [Migration("20190716164225_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -175,6 +175,10 @@ namespace TesterBase.Migrations
 
                     b.Property<int?>("FieldGroupDetailId");
 
+                    b.Property<string>("FormatErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
                     b.Property<int?>("GridWidth");
 
                     b.Property<string>("HelpText")
@@ -196,6 +200,18 @@ namespace TesterBase.Migrations
                     b.Property<int?>("MinLength");
 
                     b.Property<string>("MinLengthErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
+                    b.Property<string>("RangeErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
+                    b.Property<string>("RangeMax")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
+                    b.Property<string>("RangeMin")
                         .HasMaxLength(255)
                         .IsUnicode(false);
 

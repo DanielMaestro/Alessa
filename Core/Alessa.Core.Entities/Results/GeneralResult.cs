@@ -10,7 +10,7 @@ namespace Alessa.Core.Entities.Results
         /// <summary>
         /// Gets or sets the message list.
         /// </summary>
-        public virtual IList<GeneralMessage> Messages { get; set; } = new List<GeneralMessage>();
+        public virtual List<GeneralMessage> Messages { get; set; } = new List<GeneralMessage>();
 
         /// <summary>
         /// Gets or sets the message origin.

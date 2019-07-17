@@ -78,6 +78,14 @@
         /// </summary>
         public virtual int? MaxLength { get; set; }
         /// <summary>
+        /// Gets or sets a minimun range to validate this field.
+        /// </summary>
+        public virtual string RangeMin { get; set; }
+        /// <summary>
+        /// Gets or sets a maximun in order to validate this field.
+        /// </summary>
+        public virtual string RangeMax { get; set; }
+        /// <summary>
         /// Gets or sets a required error message.
         /// </summary>
         public virtual string RequiredErrorMsg { get; set; }
@@ -93,6 +101,14 @@
         /// Gets or sets a maximun error message.
         /// </summary>
         public virtual string MaxLengthErrorMsg { get; set; }
+        /// <summary>
+        /// Gets or sets a range error message.
+        /// </summary>
+        public virtual string RangeErrorMsg { get; set; }
+        /// <summary>
+        /// Gets or sets a format error message.
+        /// </summary>
+        public virtual string FormatErrorMsg { get; set; }
         /// <summary>
         /// Gets or sets a displaying format in order to validate this field.
         /// </summary>

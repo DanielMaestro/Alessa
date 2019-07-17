@@ -282,10 +282,14 @@ namespace Alessa.QueryBuilder
                 table.Property(f => f.Regex).SetVarcharProperty(512, false);
                 table.Property(f => f.MinLength).SetIntProperty(false);
                 table.Property(f => f.MaxLength).SetIntProperty(false);
+                table.Property(f => f.RangeMin).SetVarcharProperty(255, false);
+                table.Property(f => f.RangeMax).SetVarcharProperty(255, false);
                 table.Property(f => f.RequiredErrorMsg).SetVarcharProperty(255, false);
                 table.Property(f => f.RegexErrorMsg).SetVarcharProperty(255, false);
                 table.Property(f => f.MinLengthErrorMsg).SetVarcharProperty(255, false);
                 table.Property(f => f.MaxLengthErrorMsg).SetVarcharProperty(255, false);
+                table.Property(f => f.RangeErrorMsg).SetVarcharProperty(255, false);
+                table.Property(f => f.FormatErrorMsg).SetVarcharProperty(255, false);
                 table.Property(f => f.DisplayFormat).SetVarcharProperty(255, false);
                 table.Property(f => f.GridWidth).SetIntProperty(false);
                 table.Property(f => f.EditWidth).SetIntProperty(false);

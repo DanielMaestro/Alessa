@@ -9,15 +9,12 @@ namespace Alessa.Core.Helpers
     /// </summary>
     public partial class EntityHelper
     {
+        private static Type[] _allowedTypes;
+        private static Type[] _notAllowedTypes;
 
-        /// <summary>
-        /// Gets a list of primitive types.
-        /// </summary>
-        public static System.Collections.Generic.IEnumerable<Type> PrimitiveTypes
+        static EntityHelper()
         {
-            get
-            {
-                Type[] allowedTypes =
+            _allowedTypes = new Type[]
                 {
                     typeof(string),
                     typeof(bool),
@@ -44,7 +41,20 @@ namespace Alessa.Core.Helpers
                     typeof(TimeSpan?),
                 };
 
-                return allowedTypes;
+            _notAllowedTypes = new Type[]
+                {
+                    typeof(Enumerable),
+                };
+        }
+
+        /// <summary>
+        /// Gets a list of primitive types.
+        /// </summary>
+        public static System.Collections.Generic.IEnumerable<Type> PrimitiveTypes
+        {
+            get
+            {
+                return _allowedTypes;
             }
         }
         /// <summary>
@@ -54,12 +64,7 @@ namespace Alessa.Core.Helpers
         {
             get
             {
-                Type[] notAllowedTypes =
-                {
-                    typeof(Enumerable),
-                };
-
-                return notAllowedTypes;
+                return _notAllowedTypes;
             }
         }
 
@@ -93,6 +98,20 @@ namespace Alessa.Core.Helpers
                              select property;
 
             return properties;
+        }
+
+
+        /// <summary>
+        /// Gets the converted value.
+        /// </summary>
+        /// <param name="valueToConvert">Value to convert.</param>
+        /// <typeparam name="T">Type to convert.</typeparam>
+        /// <returns></returns>
+        public static T GetConvertedValue<T>(object valueToConvert)
+        {
+            var result = GetConvertedValue(valueToConvert, typeof(T));
+
+            return (T)result;
         }
 
         /// <summary>

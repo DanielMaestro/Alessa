@@ -173,6 +173,10 @@ namespace TesterBase.Migrations
 
                     b.Property<int?>("FieldGroupDetailId");
 
+                    b.Property<string>("FormatErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
                     b.Property<int?>("GridWidth");
 
                     b.Property<string>("HelpText")
@@ -194,6 +198,18 @@ namespace TesterBase.Migrations
                     b.Property<int?>("MinLength");
 
                     b.Property<string>("MinLengthErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
+                    b.Property<string>("RangeErrorMsg")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
+                    b.Property<string>("RangeMax")
+                        .HasMaxLength(255)
+                        .IsUnicode(false);
+
+                    b.Property<string>("RangeMin")
                         .HasMaxLength(255)
                         .IsUnicode(false);
 
