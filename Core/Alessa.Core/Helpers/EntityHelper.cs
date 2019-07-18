@@ -152,7 +152,10 @@ namespace Alessa.Core.Helpers
                 }
                 else
                 {
-                    result = default(DateTime);
+                    if (typeToConvert != typeof(DateTime?))
+                    {
+                        result = default(DateTime);
+                    }
                 }
             }
             else if (typeToConvert == typeof(decimal) || typeToConvert == typeof(decimal?))

@@ -19,7 +19,7 @@ namespace Alessa.QueryBuilder
         /// <summary>
         /// Whether is a null value or not.
         /// </summary>
-        internal bool HasValue { get { return Value == null; } }
+        internal bool HasValue { get { return Value != null; } }
         /// <summary>
         /// Initializaes a new instance of <see cref="ValueComparer"/> struct.
         /// </summary>
@@ -102,7 +102,7 @@ namespace Alessa.QueryBuilder
         internal string GetFormattedValue(string format)
         {
             string result = null;
-            if (!this.HasValue)
+            if (this.HasValue)
             {
                 if (!string.IsNullOrWhiteSpace(format))
                 {
@@ -125,11 +125,20 @@ namespace Alessa.QueryBuilder
                 }
                 else
                 {
-                    result = result.ToString();
+                    result = this.Value.ToString();
                 }
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.Value?.ToString();
         }
     }
 }

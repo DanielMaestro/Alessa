@@ -218,7 +218,7 @@ namespace Alessa.QueryBuilder
             // Exdecutes the basic validations.
             if (basicValidations)
             {
-                var validations = Validations.GetValidations(parameters, fieldDefinitions);
+                var validations = BasicValidations.GetValidations(parameters, fieldDefinitions);
                 result.Messages.AddRange(validations);
             }
 

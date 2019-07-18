@@ -9,12 +9,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using static Alessa.ALex.AlexQueryExtensions;
 
 namespace Alessa.QueryBuilder
 {
-    internal static class Validations
+    internal static class BasicValidations
     {
         #region Fields and constants
         // Those are constant codes used for the messaging.
@@ -33,9 +32,9 @@ namespace Alessa.QueryBuilder
         private const string defaultMaxErrorMsg = "The length of {{DisplayName}} must be {{MaxLength}} or fewer.";
         private const string defaultBetweenErrorMsg = "The length of {{DisplayName}} must be between {{MinLength}} and {{MaxLength}}.";
         private const string defaultFormatErrorMsg = "The value {{Value}} is not valid for {{DisplayName}}.";
-        private const string defaultRangeErrorMsg = "The value value for {{DisplayName}} must be between {{MinRange}} and {{MaxRange}}";
-        private const string defaultMinRangeErrorMsg = "The value value for {{DisplayName}} must be greater than {{MinRange}}";
-        private const string defaultMaxRangeErrorMsg = "The value value for {{DisplayName}} must be less than {{MaxRange}}";
+        private const string defaultRangeErrorMsg = "The value for {{DisplayName}} must be between {{MinRange}} and {{MaxRange}}";
+        private const string defaultMinRangeErrorMsg = "The value for {{DisplayName}} must be greater than {{MinRange}}";
+        private const string defaultMaxRangeErrorMsg = "The value for {{DisplayName}} must be less than {{MaxRange}}";
 
         private const string defaultCollectionMinCodeErrorMsg = "The selected item for {{DisplayName}} must be {{MinLength}} or more.";
         private const string defaultCollectionMaxErrorMsg = "The selected item for {{DisplayName}} must be {{MaxLength}} or fewer.";
@@ -73,13 +72,14 @@ namespace Alessa.QueryBuilder
             }
 
             // Validations parallel processing.
-            Parallel.For(0, cross.Count, (i) =>
+            //Parallel.For(0, cross.Count, (i) =>
+            for (int i = 0; i < cross.Count; i++)
             {
                 // Gets the dicitonary from the object properties.
                 var dictionary = new ConcurrentDictionary<string, object>(cross[i].Item2.GetDictionary());
 
-                // The value is a collection?
-                if (cross[i].Item1.Value is IEnumerable)
+                // The value is a collection? (But not an string)
+                if (cross[i].Item1.Value is IEnumerable && !(cross[i].Item1.Value is string))
                 {
                     IEnumerable<object> values;
                     values = ((IEnumerable)cross[i].Item1.Value)?.Cast<object>();
@@ -90,7 +90,8 @@ namespace Alessa.QueryBuilder
                     // Validates the value.
                     ValidateSingleValue(dictionary, cross[i].Item1.Value, cross[i].Item3, ref messages);
                 }
-            });
+            }
+            //);
 
             return messages.ToList();
         }
@@ -146,10 +147,10 @@ namespace Alessa.QueryBuilder
             }
         }
 
-        private static void ValidateSingleValue(IDictionary<string, object> dictionary, object values, FieldDefinition fieldDefinition, ref ConcurrentBag<GeneralMessage> messages)
+        private static void ValidateSingleValue(IDictionary<string, object> dictionary, object value, FieldDefinition fieldDefinition, ref ConcurrentBag<GeneralMessage> messages)
         {
-            bool isNullValue = values == null;
-            string strValue = values?.ToString();
+            bool isNullValue = value == null;
+            string strValue = value?.ToString();
             // Is required?
             if (fieldDefinition.FieldDefinitionUi.IsRequired && (isNullValue || string.IsNullOrWhiteSpace(strValue)))
             {
@@ -219,7 +220,7 @@ namespace Alessa.QueryBuilder
                     }
                 }
 
-                ValidateRangeValue(dictionary, strValue, fieldDefinition, ref messages);
+                ValidateRangeValue(dictionary, value, fieldDefinition, ref messages);
             }
         }
 
@@ -233,94 +234,99 @@ namespace Alessa.QueryBuilder
         /// <param name="messages"></param>
         private static void ValidateRangeValue(IDictionary<string, object> dictionary, object value, FieldDefinition fieldDefinition, ref ConcurrentBag<GeneralMessage> messages)
         {
-            // The minimum value.
-            ValueComparer min;
-            // The maximun value.
-            ValueComparer max;
-            // The value.
-            ValueComparer val;
-
-            // Checks if is a valid value based on the field type.
-            switch (fieldDefinition.FieldType)
+            // Only validates the selected field types.
+            if (fieldDefinition.FieldType == EFieldType.Date || fieldDefinition.FieldType == EFieldType.DateTime || fieldDefinition.FieldType == EFieldType.Decimal || fieldDefinition.FieldType == EFieldType.Time || fieldDefinition.FieldType == EFieldType.Integer)
             {
-                case EFieldType.Date:
-                case EFieldType.DateTime:
-                    max = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMax, typeof(DateTime)), fieldDefinition.FieldType);
-                    min = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMin, typeof(DateTime)), fieldDefinition.FieldType);
-                    val = new ValueComparer(EntityHelper.GetConvertedValue(value, typeof(DateTime)), fieldDefinition.FieldType);
-                    break;
-                case EFieldType.Decimal:
-                    max = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMax, typeof(decimal)), fieldDefinition.FieldType);
-                    min = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMin, typeof(decimal)), fieldDefinition.FieldType);
-                    val = new ValueComparer(EntityHelper.GetConvertedValue(value, typeof(decimal)), fieldDefinition.FieldType);
-                    break;
-                case EFieldType.Time:
-                    max = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMax, typeof(TimeSpan)), fieldDefinition.FieldType);
-                    min = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMin, typeof(TimeSpan)), fieldDefinition.FieldType);
-                    val = new ValueComparer(EntityHelper.GetConvertedValue(value, typeof(TimeSpan)), fieldDefinition.FieldType);
-                    break;
-                default:
-                    max = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMax, typeof(long)), fieldDefinition.FieldType);
-                    min = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMin, typeof(long)), fieldDefinition.FieldType);
-                    val = new ValueComparer(EntityHelper.GetConvertedValue(value, typeof(long)), fieldDefinition.FieldType);
-                    break;
-            }
+                // The minimum value.
+                ValueComparer min;
+                // The maximun value.
+                ValueComparer max;
+                // The value.
+                ValueComparer val;
 
-
-            // Creates a new dictionary to avoid conflicts with the actual.
-            var d = new Dictionary<string, object>(dictionary)
-                .AddOrUpdate("Value", value)
-                .AddOrUpdate("MinRange", min.GetFormattedValue(fieldDefinition.FieldDefinitionUi.DisplayFormat))
-                .AddOrUpdate("MaxRange", max.GetFormattedValue(fieldDefinition.FieldDefinitionUi.DisplayFormat));
-
-            // If has no value then it means the format is incorrect.
-            if (val.HasValue)
-            {
-                // There is a value specified for min and max.
-                if (min.HasValue && val < min && max.HasValue && val > max)
+                // Checks if is a valid value based on the field type.
+                switch (fieldDefinition.FieldType)
                 {
+                    case EFieldType.Date:
+                    case EFieldType.DateTime:
+                        max = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMax, typeof(DateTime?)), fieldDefinition.FieldType);
+                        min = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMin, typeof(DateTime?)), fieldDefinition.FieldType);
+                        val = new ValueComparer(EntityHelper.GetConvertedValue(value, typeof(DateTime?)), fieldDefinition.FieldType);
+                        break;
+                    case EFieldType.Decimal:
+                        max = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMax, typeof(decimal?)), fieldDefinition.FieldType);
+                        min = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMin, typeof(decimal?)), fieldDefinition.FieldType);
+                        val = new ValueComparer(EntityHelper.GetConvertedValue(value, typeof(decimal?)), fieldDefinition.FieldType);
+                        break;
+                    case EFieldType.Time:
+                        max = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMax, typeof(TimeSpan?)), fieldDefinition.FieldType);
+                        min = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMin, typeof(TimeSpan?)), fieldDefinition.FieldType);
+                        val = new ValueComparer(EntityHelper.GetConvertedValue(value, typeof(TimeSpan?)), fieldDefinition.FieldType);
+                        break;
+                    default:
+                        max = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMax, typeof(long?)), fieldDefinition.FieldType);
+                        min = new ValueComparer(EntityHelper.GetConvertedValue(fieldDefinition.FieldDefinitionUi.RangeMin, typeof(long?)), fieldDefinition.FieldType);
+                        val = new ValueComparer(EntityHelper.GetConvertedValue(value, typeof(long?)), fieldDefinition.FieldType);
+                        break;
+                }
+
+
+                // Creates a new dictionary to avoid conflicts with the actual.
+                var d = new Dictionary<string, object>(dictionary)
+                    .AddOrUpdate("Value", value)
+                    .AddOrUpdate("MinRange", min.GetFormattedValue(fieldDefinition.FieldDefinitionUi.DisplayFormat))
+                    .AddOrUpdate("MaxRange", max.GetFormattedValue(fieldDefinition.FieldDefinitionUi.DisplayFormat));
+
+                // If has no value then it means the format is incorrect.
+                if (val.HasValue)
+                {
+                    // There is a value specified for min and max.
+                    if (min.HasValue && max.HasValue && (val < min || val > max))
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = rangeCode,
+                            MessageType = EMessageType.Error,
+                            Message = fieldDefinition.FieldDefinitionUi.RangeErrorMsg?.FormatQuery(d) ?? defaultRangeErrorMsg.FormatQuery(d),
+                            Source = fieldDefinition.ItemName,
+                        });
+                    }
+                    // Only max has value.
+                    else if (max.HasValue && val > max)
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = rangeCode,
+                            MessageType = EMessageType.Error,
+                            Message = fieldDefinition.FieldDefinitionUi.RangeErrorMsg?.FormatQuery(d) ?? defaultMaxRangeErrorMsg.FormatQuery(d),
+                            Source = fieldDefinition.ItemName,
+                        });
+                    }
+                    // Only min has a value.
+                    else if (min.HasValue && val < min)
+                    {
+                        messages.Add(new GeneralMessage()
+                        {
+                            Code = rangeCode,
+                            MessageType = EMessageType.Error,
+                            Message = fieldDefinition.FieldDefinitionUi.RangeErrorMsg?.FormatQuery(d) ?? defaultMinRangeErrorMsg.FormatQuery(d),
+                            Source = fieldDefinition.ItemName,
+                        });
+                    }
+                }
+                else
+                {
+                    // BAd format error.
                     messages.Add(new GeneralMessage()
                     {
-                        Code = rangeCode,
+                        Code = notValidFormatCode,
                         MessageType = EMessageType.Error,
-                        Message = fieldDefinition.FieldDefinitionUi.RangeErrorMsg?.FormatQuery(d) ?? defaultRangeErrorMsg.FormatQuery(d),
+                        Message = fieldDefinition.FieldDefinitionUi.FormatErrorMsg?.FormatQuery(d) ?? defaultMinRangeErrorMsg.FormatQuery(d),
                         Source = fieldDefinition.ItemName,
                     });
                 }
-                // Only max has value.
-                else if (max.HasValue && val > max)
-                {
-                    messages.Add(new GeneralMessage()
-                    {
-                        Code = rangeCode,
-                        MessageType = EMessageType.Error,
-                        Message = fieldDefinition.FieldDefinitionUi.RangeErrorMsg?.FormatQuery(d) ?? defaultMaxRangeErrorMsg.FormatQuery(d),
-                        Source = fieldDefinition.ItemName,
-                    });
-                }
-                // Only min has a value.
-                else if (min.HasValue && val < min)
-                {
-                    messages.Add(new GeneralMessage()
-                    {
-                        Code = rangeCode,
-                        MessageType = EMessageType.Error,
-                        Message = fieldDefinition.FieldDefinitionUi.RangeErrorMsg?.FormatQuery(d) ?? defaultMinRangeErrorMsg.FormatQuery(d),
-                        Source = fieldDefinition.ItemName,
-                    });
-                }
             }
-            else
-            {
-                // BAd format error.
-                messages.Add(new GeneralMessage()
-                {
-                    Code = notValidFormatCode,
-                    MessageType = EMessageType.Error,
-                    Message = fieldDefinition.FieldDefinitionUi.FormatErrorMsg?.FormatQuery(d) ?? defaultMinRangeErrorMsg.FormatQuery(d),
-                    Source = fieldDefinition.ItemName,
-                });
-            }
+
         }
         #endregion
 

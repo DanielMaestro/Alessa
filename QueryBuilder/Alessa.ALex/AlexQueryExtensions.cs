@@ -22,7 +22,7 @@ namespace Alessa.ALex
         {
             IDictionary<string, object> properties = GetDictionary(data);
 
-            var result = FormatQuery(queryTemplate, properties, true);
+            var result = FormatQuery(queryTemplate, properties);
 
             return result;
         }
@@ -36,9 +36,22 @@ namespace Alessa.ALex
         /// <returns>A string with the formatted query.</returns>
         public static string FormatQuery(this string queryTemplate, IDictionary<string, object> properties)
         {
-            var result = FormatQuery(queryTemplate, properties, false);
+            // Searches for property references embeded in the query template.
+            var collection = System.Text.RegularExpressions.Regex.Matches(queryTemplate, openBracets + "\\s{0,5}\\w{1,50}\\s{0,5}" + closeBracets);
 
-            return result;
+            // Builds a new string builder.
+            var builder = new System.Text.StringBuilder(queryTemplate);
+
+            // Replaces the token names.
+            if (properties != null)
+            {
+                for (int e = 0; e < collection.Count; e++)
+                {
+                    builder.Replace(collection[e].Value, properties[collection[e].Value.Replace(openBracets, string.Empty).Replace(closeBracets, string.Empty)]?.ToString());
+                };
+            }
+            return builder.ToString();
+
         }
 
         /// <summary>
@@ -56,41 +69,15 @@ namespace Alessa.ALex
             {
                 if (obj is IDictionary<string, object>)
                 {
-                    properties = new Dictionary<string, object>((obj as IDictionary<string, object>).ToDictionary(e => openBracets + e.Key + closeBracets, e => e.Value));
+                    properties = new Dictionary<string, object>((obj as IDictionary<string, object>)/*.ToDictionary(e => openBracets + e.Key + closeBracets, e => e.Value)*/);
                 }
                 else
                 {
-                    properties = obj.GetType().GetProperties().ToDictionary(e => openBracets + e.Name + closeBracets, e => e.GetValue(obj));
+                    properties = obj.GetType().GetProperties().ToDictionary(e => /*openBracets +*/ e.Name/* + closeBracets*/, e => e.GetValue(obj));
                 }
             }
 
             return properties;
-        }
-
-        private static string FormatQuery(string queryTemplate, IDictionary<string, object> properties, bool hasBracets)
-        {
-            // Searches for property references embeded in the query template.
-            var collection = System.Text.RegularExpressions.Regex.Matches(queryTemplate, openBracets + "\\s{0,5}\\w{1,50}\\s{0,5}" + closeBracets);
-
-            // Builds a new string builder.
-            var builder = new System.Text.StringBuilder(queryTemplate);
-
-            // Replaces the token names.
-            if (properties != null)
-            {
-                for (int e = 0; e < collection.Count; e++)
-                {
-                    if (hasBracets)
-                    {
-                        builder.Replace(collection[e].Value, properties[collection[e].Value]?.ToString());
-                    }
-                    else
-                    {
-                        builder.Replace(collection[e].Value, properties[collection[e].Value.Replace(openBracets, string.Empty).Replace(closeBracets, string.Empty)]?.ToString());
-                    }
-                };
-            }
-            return builder.ToString();
         }
     }
 }
