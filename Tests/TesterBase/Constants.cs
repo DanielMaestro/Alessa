@@ -3,8 +3,8 @@
     /// <summary>
     /// 
     /// </summary>
-    internal static class Constants
+    public static class Constants
     {
-        internal const string AlessaConnectionString = @"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=AlessaData;Integrated Security=SSPI;";
+        public const string AlessaConnectionString = @"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=AlessaData;Integrated Security=SSPI;";
     }
 }
