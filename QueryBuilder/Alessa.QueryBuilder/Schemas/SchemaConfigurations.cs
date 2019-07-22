@@ -80,7 +80,7 @@ namespace Alessa.QueryBuilder
                 var fieldDefinitions = base.GetFieldDefinitions(parameters);
 
                 var validations = from val in base.Context.QueryBuilderDbContext.TableFieldValidations
-                                  where val.ValidateOnClient && val.ExecutionSource.ExecutionType == Entities.EExecutionType.JavaScript
+                                  where val.ValidateOnClient && val.IsEnabled // && val.ExecutionSource.ExecutionType == Entities.EExecutionType.JavaScript
                                   && (from f in fieldDefinitions
                                       select f.FieldDefinitionId).Contains(val.ChangeFieldDefinitionId)
                                   select val;
@@ -92,6 +92,7 @@ namespace Alessa.QueryBuilder
                                           ExecuteOnClientSide = val.Max(e => e.ValidateOnClient),
                                           ExecutionResultType = val.Max(e => e.ExecutionResultType),
                                           Statement = val.Max(e => e.ExecutionSource.ExecutionText),
+                                          AdditionalParameters = val.Max(e => e.ExecutionSource.AdditionalParameters),
                                           Fields = (from v in validations
                                                     select v.ChangeFieldDefinition.ItemName).ToList()
                                       };

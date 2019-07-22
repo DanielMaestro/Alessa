@@ -85,6 +85,9 @@ namespace TesterBase.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("AdditionalParameters")
+                        .IsUnicode(false);
+
                     b.Property<string>("ExecutionDescription")
                         .IsRequired()
                         .HasMaxLength(512)
@@ -484,6 +487,8 @@ namespace TesterBase.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .IsUnicode(false);
+
+                    b.Property<bool>("IsEnabled");
 
                     b.Property<bool>("ValidateOnClient");
 

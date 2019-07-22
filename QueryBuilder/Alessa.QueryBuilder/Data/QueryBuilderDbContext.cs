@@ -426,6 +426,7 @@ namespace Alessa.QueryBuilder
                     .HasKey(f => new { f.ChangeFieldDefinitionId, f.ExecutionSourceId });
 
                 table.Property(f => f.ValidateOnClient).SetBitProperty();
+                table.Property(f => f.IsEnabled).SetBitProperty();
                 table.Property(f => f.ExecutionResultType).SetEnumProperty();
 
                 table
@@ -448,6 +449,7 @@ namespace Alessa.QueryBuilder
 
                 table.Property(f => f.ExecutionDescription).SetVarcharProperty(512);
                 table.Property(f => f.ExecutionText).SetVarcharProperty(8000);
+                table.Property(f => f.AdditionalParameters).SetVarcharProperty(8000, false);
                 table.Property(f => f.ExecutionType).SetEnumProperty();
 
                 table

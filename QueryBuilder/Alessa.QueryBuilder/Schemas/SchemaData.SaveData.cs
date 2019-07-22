@@ -200,6 +200,7 @@ namespace Alessa.QueryBuilder
                                                                     DisplayFormat = fd.FieldDefinitionUi.DisplayFormat,
                                                                 },
                                                                 TableFieldValidations = (from tfv in fd.TableFieldValidations
+                                                                                         where tfv.IsEnabled
                                                                                          select new TableFieldValidation()
                                                                                          {
                                                                                              ExecutionResultType = tfv.ExecutionResultType,

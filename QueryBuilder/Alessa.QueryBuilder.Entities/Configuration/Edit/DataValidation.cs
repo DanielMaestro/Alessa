@@ -12,6 +12,10 @@ namespace Alessa.QueryBuilder.Entities.Configuration
         /// </summary>
         public virtual string Statement { get; set; }
         /// <summary>
+        /// The extra parameters.
+        /// </summary>
+        public virtual string AdditionalParameters { get; set; }
+        /// <summary>
         /// Gets or sets the execution result type.
         /// </summary>
         public virtual EExecutionResultType ExecutionResultType { get; set; }

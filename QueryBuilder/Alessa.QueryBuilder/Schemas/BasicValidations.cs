@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using static Alessa.ALex.AlexQueryExtensions;
 
 namespace Alessa.QueryBuilder
@@ -72,8 +73,8 @@ namespace Alessa.QueryBuilder
             }
 
             // Validations parallel processing.
-            //Parallel.For(0, cross.Count, (i) =>
-            for (int i = 0; i < cross.Count; i++)
+            Parallel.For(0, cross.Count, (i) =>
+            //for (int i = 0; i < cross.Count; i++)
             {
                 // Gets the dicitonary from the object properties.
                 var dictionary = new ConcurrentDictionary<string, object>(cross[i].Item2.GetDictionary());
@@ -91,7 +92,7 @@ namespace Alessa.QueryBuilder
                     ValidateSingleValue(dictionary, cross[i].Item1.Value, cross[i].Item3, ref messages);
                 }
             }
-            //);
+            );
 
             return messages.ToList();
         }

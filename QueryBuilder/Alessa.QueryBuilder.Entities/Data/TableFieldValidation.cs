@@ -18,6 +18,10 @@
         /// </summary>
         public virtual bool ValidateOnClient { get; set; }
         /// <summary>
+        /// Whether this validation is enabled or not.
+        /// </summary>
+        public virtual bool IsEnabled { get; set; }
+        /// <summary>
         /// Gets or sets the execution result type.
         /// </summary>
         public virtual EExecutionResultType ExecutionResultType { get; set; }

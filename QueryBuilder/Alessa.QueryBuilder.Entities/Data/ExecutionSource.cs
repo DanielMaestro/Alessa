@@ -24,10 +24,13 @@ namespace Alessa.QueryBuilder.Entities.Data
         /// </summary>
         public virtual string ExecutionText { get; set; }
         /// <summary>
+        /// Gets or sets a set of aditional parameters to use in the execution.
+        /// </summary>
+        public virtual string AdditionalParameters { get; set; }
+        /// <summary>
         /// Gets or sets the <see cref="TableConfiguration"/> identifier.
         /// </summary>
         public virtual int TableConfigurationId { get; set; }
-
 
         /// <summary>
         /// Navigation property for <see cref="TableConfiguration"/> table.

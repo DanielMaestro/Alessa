@@ -10,7 +10,7 @@ using TesterBase.DataContext;
 namespace TesterBase.Migrations
 {
     [DbContext(typeof(SqlQueryBuilderTestDataContext))]
-    [Migration("20190716164225_Initial")]
+    [Migration("20190722174750_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -86,6 +86,9 @@ namespace TesterBase.Migrations
                     b.Property<int>("ExecutionSourceId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AdditionalParameters")
+                        .IsUnicode(false);
 
                     b.Property<string>("ExecutionDescription")
                         .IsRequired()
@@ -486,6 +489,8 @@ namespace TesterBase.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .IsUnicode(false);
+
+                    b.Property<bool>("IsEnabled");
 
                     b.Property<bool>("ValidateOnClient");
 

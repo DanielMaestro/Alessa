@@ -218,6 +218,7 @@ namespace TesterBase.Migrations
                     ExecutionType = table.Column<string>(unicode: false, maxLength: 30, nullable: false),
                     ExecutionDescription = table.Column<string>(unicode: false, maxLength: 512, nullable: false),
                     ExecutionText = table.Column<string>(unicode: false, nullable: false),
+                    AdditionalParameters = table.Column<string>(unicode: false, nullable: true),
                     TableConfigurationId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -685,6 +686,7 @@ namespace TesterBase.Migrations
                     ChangeFieldDefinitionId = table.Column<int>(nullable: false),
                     ExecutionSourceId = table.Column<int>(nullable: false),
                     ValidateOnClient = table.Column<bool>(nullable: false),
+                    IsEnabled = table.Column<bool>(nullable: false),
                     ExecutionResultType = table.Column<string>(unicode: false, maxLength: 30, nullable: false)
                 },
                 constraints: table =>
