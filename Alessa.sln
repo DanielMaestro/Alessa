@@ -61,6 +61,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alessa.ServiceStack", "Quer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alessa.ServiceStack.Test", "Tests\Alessa.ServiceStack.Test\Alessa.ServiceStack.Test.csproj", "{7A6A95EA-EC81-4EE1-8C77-0AFCF9DC7FE6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.Source", "Common\TemporalProjects\ServiceStack.OrmLite\ServiceStack.OrmLite.Source.csproj", "{6334A8AE-89F0-450C-A746-D87FF9B38627}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +133,10 @@ Global
 		{7A6A95EA-EC81-4EE1-8C77-0AFCF9DC7FE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A6A95EA-EC81-4EE1-8C77-0AFCF9DC7FE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A6A95EA-EC81-4EE1-8C77-0AFCF9DC7FE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6334A8AE-89F0-450C-A746-D87FF9B38627}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6334A8AE-89F0-450C-A746-D87FF9B38627}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6334A8AE-89F0-450C-A746-D87FF9B38627}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6334A8AE-89F0-450C-A746-D87FF9B38627}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,6 +161,7 @@ Global
 		{7F30FA58-8CD5-4ABF-A484-ED96E66D6869} = {C8D1220D-FED0-4351-8A9D-A80E629F29CC}
 		{F7DACDD7-0CEE-4D40-A0B1-74040DC0FA57} = {8C1A21DA-C0F2-4BE4-BDE7-879069876695}
 		{7A6A95EA-EC81-4EE1-8C77-0AFCF9DC7FE6} = {2F1FEFCA-7C54-4578-ADC0-478EF8FF90EC}
+		{6334A8AE-89F0-450C-A746-D87FF9B38627} = {A541A603-D99A-4C17-99F2-952A91881358}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4F7211F1-858B-4439-A2D6-3CBFD3B0AB98}

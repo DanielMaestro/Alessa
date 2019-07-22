@@ -13,10 +13,10 @@
 
   <ItemGroup>
     <PackageReference Include="ServiceStack" Version="5.5.0" />
-    <PackageReference Include="ServiceStack.OrmLite" Version="5.5.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\TemporalProjects\ServiceStack.OrmLite\ServiceStack.OrmLite.Source.csproj" />
     <ProjectReference Include="..\Alessa.QueryBuilder.Entities\Alessa.QueryBuilder.Entities.csproj" />
   </ItemGroup>
 
